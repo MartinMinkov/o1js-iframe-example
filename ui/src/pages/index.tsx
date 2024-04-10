@@ -1,29 +1,56 @@
-
-import Head from 'next/head';
-import Image from 'next/image';
-import { useEffect } from 'react';
-import GradientBG from '../components/GradientBG.js';
-import styles from '../styles/Home.module.css';
-import heroMinaLogo from '../../public/assets/hero-mina-logo.svg';
-import arrowRightSmall from '../../public/assets/arrow-right-small.svg';
+import Head from "next/head";
+import Image from "next/image";
+import { useEffect } from "react";
+import GradientBG from "../components/GradientBG.js";
+import styles from "../styles/Home.module.css";
+import heroMinaLogo from "../../public/assets/hero-mina-logo.svg";
+import arrowRightSmall from "../../public/assets/arrow-right-small.svg";
 
 export default function Home() {
+  if (typeof window !== "undefined") {
+    if (window.crossOriginIsolated) {
+      console.log("Host Cross-origin isolation is enabled!");
+    } else {
+      console.log("Host Cross-origin isolation is NOT enabled!");
+    }
+  }
   useEffect(() => {
-    (async () => {
-      const { Mina, PublicKey } = await import('o1js');
-      const { Add } = await import('../../../contracts/build/src/');
+    // Event listener for messages from the parent window
+    window.addEventListener("message", (event) => {
+      if (event.origin === "http://localhost:5173") {
+        // Security check
+        console.log("Received message from parent:", event.data);
 
-      // Update this to use the address (public key) for your zkApp account.
-      // To try it out, you can try this address for an example "Add" smart contract that we've deployed to
-      // Berkeley Testnet B62qkwohsqTBPsvhYE8cPZSpzJMgoKn4i1LQRuBAtVXWpaT4dgH6WoA.
-      const zkAppAddress = '';
-      // This should be removed once the zkAppAddress is updated.
-      if (!zkAppAddress) {
-        console.error(
-          'The following error is caused because the zkAppAddress has an empty string as the public key. Update the zkAppAddress with the public key for your zkApp account, or try this address for an example "Add" smart contract that we deployed to Berkeley Testnet: B62qkwohsqTBPsvhYE8cPZSpzJMgoKn4i1LQRuBAtVXWpaT4dgH6WoA'
+        // Send a response back to the parent
+        window.parent.postMessage(
+          "Message received by iframe!",
+          "http://localhost:5173"
         );
       }
-      //const zkApp = new Add(PublicKey.fromBase58(zkAppAddress))
+    });
+    (async () => {
+      const { Field } = await import("o1js");
+      const { Main } = await import("../../../contracts/build/src/");
+
+      console.log("generating keypair...");
+      console.time("generating keypair...");
+      const kp = await Main.generateKeypair();
+      console.timeEnd("generating keypair...");
+
+      console.log("prove...");
+      console.time("prove...");
+      const x = Field(8);
+      const y = Field(2);
+      const proof = await Main.prove([y], [x], kp);
+      console.timeEnd("prove...");
+
+      console.log("verify...");
+      console.time("verify...");
+      let vk = kp.verificationKey();
+      let ok = await Main.verify([x], vk, proof);
+      console.timeEnd("verify...");
+
+      console.log("ok?", ok);
     })();
   }, []);
 
@@ -58,7 +85,8 @@ export default function Home() {
           </div>
           <p className={styles.start}>
             Get started by editing
-            <code className={styles.code}> src/pages/index.js</code> or <code className={styles.code}> src/pages/index.tsx</code>
+            <code className={styles.code}> src/pages/index.js</code> or{" "}
+            <code className={styles.code}> src/pages/index.tsx</code>
           </p>
           <div className={styles.grid}>
             <a
