@@ -22,10 +22,7 @@ export default function Home() {
         console.log("Received message from parent:", event.data);
 
         // Send a response back to the parent
-        window.parent.postMessage(
-          "Message received by iframe!",
-          "http://localhost:5173"
-        );
+        window.parent.postMessage(event.data + 1, "http://localhost:5173");
       }
     });
     (async () => {

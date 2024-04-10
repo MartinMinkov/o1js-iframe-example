@@ -9,7 +9,7 @@ function App() {
 
   const iframeRef = useRef(null);
 
-  const [messageFromIframe, setMessageFromIframe] = useState("");
+  const [messageFromIframe, setMessageFromIframe] = useState(0);
 
   useEffect(() => {
     const handleMessage = (event) => {
@@ -27,7 +27,7 @@ function App() {
 
   const sendMessageToIframe = () => {
     iframeRef.current.contentWindow.postMessage(
-      "Hello from parent!",
+      messageFromIframe,
       "http://localhost:3000"
     );
   };
@@ -42,7 +42,7 @@ function App() {
         height={1000}
       />
       <button onClick={sendMessageToIframe}>Send Message to Iframe</button>
-      <div>{messageFromIframe}</div>
+      <div>Counter count used by `postMessage`: {messageFromIframe}</div>
     </>
   );
 }
