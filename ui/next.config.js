@@ -23,11 +23,11 @@ const nextConfig = {
           },
           {
             key: "Cross-Origin-Embedder-Policy",
-            value: "require-corp",
+            value: "credentialless", // Can be "credentialless" or "require-corp"
           },
           {
             key: "Cross-Origin-Resource-Policy",
-            value: "same-site",
+            value: "cross-origin", // Can be "same-site" or "cross-origin"
           },
         ],
       },
